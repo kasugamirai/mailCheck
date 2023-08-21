@@ -1,0 +1,59 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.20.3
+
+      - name: Build
+        run: go build -o mailCheck
+
+      - name: Check and stop running application
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: "pkill mailCheck || true"
+
+      - name: Check and delete existing application
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: "test -f /mailCheck/mailCheck && rm /mailCheck/mailCheck || true"
+
+      - name: Copy backend file via ssh
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "./mailCheck"
+          target: "/mailCheck"
+
+      - name: Execute remote ssh commands
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /chatgpt
+            export your_email@gmail.com=${{ secrets.your_email@gmail.com }}
+            export your_password=${{ secrets.your_password }}
+            setsid ./mailCheck >> mailCheck.log 2>&1 &
