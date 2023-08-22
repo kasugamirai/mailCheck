@@ -18,7 +18,7 @@ func ConnectToEmail(email, password string) (*client.Client, error) {
 	return c, nil
 }
 
-func CheckForContents(c *client.Client) ([]string, error) {
+func CheckForContents(c *client.Client, target string) ([]string, error) {
 	if _, err := c.Select("INBOX", false); err != nil {
 		return nil, err
 	}
@@ -42,7 +42,7 @@ func CheckForContents(c *client.Client) ([]string, error) {
 	var foundEmails []string
 	for msg := range messages {
 		subject := msg.Envelope.Subject
-		if strings.Contains(subject, "123") {
+		if strings.Contains(subject, target) {
 			foundEmails = append(foundEmails, subject)
 		}
 	}

@@ -54,6 +54,6 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /chatgpt
-            export your_email@gmail.com=${{ secrets.your_email@gmail.com }}
+            export your_email@gmail.com=${{ secrets.your_email }}
             export your_password=${{ secrets.your_password }}
             setsid ./mailCheck >> mailCheck.log 2>&1 &
